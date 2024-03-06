@@ -1,0 +1,1 @@
+export const ADX_MACD_MANNUAL_SELL_EACH_BUY = 10;
