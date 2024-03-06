@@ -1,0 +1,3 @@
+export const BINANCE_SIMPLE_EARN_PRODUCT_ID = {
+    USDT: 'USDT001'
+};

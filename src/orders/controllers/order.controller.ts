@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { OrderEntity } from '~entities/order.entity';
 import { Exchanges } from '~core/enums/exchanges.enum';
@@ -17,7 +17,7 @@ export class OrderController {
     }
 
     @Post()
-    createBinanceOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
+    createBinanceOrder(@Body() createOrderDto: CreateOrderDto): Promise<InsertResult> {
         return this.orderService.createOrder(createOrderDto);
     }
 }

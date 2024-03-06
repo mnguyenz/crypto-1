@@ -1,14 +1,20 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { OrderType, Side, WebsocketStream } from '@binance/connector-typescript';
-import { SYMBOLS } from '~core/constants/crypto-code.constant';
+import { Side, WebsocketStream } from '@binance/connector-typescript';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { OrderRepository } from '~orders/order.repository';
+import { Exchanges } from '~core/enums/exchanges.enum';
+import { OrderEntity } from '~entities/order.entity';
+import { BinanceApiOrderService } from '~binance-api/services/binance-api-order.service';
+import { BUY_ORDERS } from '~core/constants/cache-manager.constant';
 
 @Injectable()
 export class BinanceSocketOrderGateway implements OnModuleInit {
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
-        private client: WebsocketStream
+        private client: WebsocketStream,
+        private orderRepository: OrderRepository,
+        private binanceApiOrderService: BinanceApiOrderService
     ) {}
 
     async onModuleInit() {
@@ -19,41 +25,28 @@ export class BinanceSocketOrderGateway implements OnModuleInit {
         };
 
         this.client = new WebsocketStream({ callbacks });
-        this.client.miniTicker(SYMBOLS.PROSUSDT);
-        this.client.miniTicker(SYMBOLS.NFPUSDT);
+        const buyOrders = await this.orderRepository.find({
+            where: { side: Side.BUY, exchange: Exchanges.BINANCE }
+        });
+        await this.cacheManager.set(BUY_ORDERS, buyOrders, 0);
+        const distinctSymbols = [...new Set(buyOrders.map((order) => order.symbol))];
+        for (const symbol of distinctSymbols) {
+            this.client.miniTicker(symbol);
+        }
     }
 
-    async checkPrice(data: any) {
-        // const { s: symbol, c: currentPrice } = data;
-        // if (
-        //     symbol === SYMBOLS.NFPUSDT &&
-        //     parseFloat(currentPrice) < 0.78 &&
-        //     !(await this.cacheManager.get(`isBuy${SYMBOLS.NFPUSDT}`))
-        // ) {
-        //     await this.binanceApiSimpleEarnService.redeemUSDT(78);
-        //     await this.binanceApiTradeService.newOrder({
-        //         symbol: SYMBOLS.NFPUSDT,
-        //         side: Side.BUY,
-        //         type: OrderType.LIMIT,
-        //         price: 0.775,
-        //         quantity: 100
-        //     });
-        //     await this.cacheManager.set(`isBuy${SYMBOLS.NFPUSDT}`, true, 0);
-        // }
-        // if (
-        //     symbol === SYMBOLS.PROSUSDT &&
-        //     parseFloat(currentPrice) < 0.54 &&
-        //     !(await this.cacheManager.get(`isBuy${SYMBOLS.PROSUSDT}`))
-        // ) {
-        //     await this.binanceApiSimpleEarnService.redeemUSDT(108);
-        //     await this.binanceApiTradeService.newOrder({
-        //         symbol: SYMBOLS.PROSUSDT,
-        //         side: Side.BUY,
-        //         type: OrderType.LIMIT,
-        //         price: 0.535,
-        //         quantity: 200
-        //     });
-        //     await this.cacheManager.set(`isBuy${SYMBOLS.PROSUSDT}`, true, 0);
-        // }
+    async checkPrice(data: any): Promise<void> {
+        const { s: symbol, c: currentPrice } = data;
+        const order = ((await this.cacheManager.get(BUY_ORDERS)) as OrderEntity[]).filter((order) => {
+            return symbol === order.symbol && currentPrice <= order.price * 1.01;
+        });
+        if (order.length) {
+            const matchOrder = order[0];
+            const updatedOrders = ((await this.cacheManager.get(BUY_ORDERS)) as OrderEntity[]).filter(
+                (order) => order.id !== matchOrder.id
+            );
+            this.cacheManager.set(BUY_ORDERS, updatedOrders);
+            this.binanceApiOrderService.redeemThenOrder({ symbol, price: order[0].price, quantity: order[0].quantity });
+        }
     }
 }
