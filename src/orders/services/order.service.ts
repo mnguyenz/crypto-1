@@ -1,15 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
 import { InsertResult } from 'typeorm';
+import { Cache } from 'cache-manager';
 import { BinanceApiMarketService } from '~binance-api/services/binance-api-market.service';
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { OrderEntity } from '~entities/order.entity';
 import { CreateOrderDto } from '~orders/dtos/create-order.dto';
 import { OrderRepository } from '~orders/order.repository';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
+import { BUY_ORDERS } from '~core/constants/cache-manager.constant';
 
 @Injectable()
 export class OrderService {
     constructor(
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private orderRepository: OrderRepository,
         private binanceApiMarketService: BinanceApiMarketService
     ) {}
@@ -18,7 +22,12 @@ export class OrderService {
         return this.orderRepository.find({ where: { exchange } });
     }
 
-    createOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
+    async createOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
+        this.cacheManager.set(
+            BUY_ORDERS,
+            ((await this.cacheManager.get(BUY_ORDERS)) as OrderEntity[]).concat(createOrderDto),
+            0
+        );
         return this.orderRepository.insert(createOrderDto);
     }
 
