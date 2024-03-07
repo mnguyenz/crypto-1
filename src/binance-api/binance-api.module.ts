@@ -8,6 +8,6 @@ import { BinanceApiTradeService } from './services/binance-api-trade.service';
     imports: [],
     controllers: [],
     providers: [BinanceApiMarketService, BinanceApiOrderService, BinanceApiSimpleEarnService, BinanceApiTradeService],
-    exports: [BinanceApiOrderService]
+    exports: [BinanceApiMarketService, BinanceApiOrderService]
 })
 export class BinanceApiModule {}
