@@ -1,1 +1,2 @@
-export const BUY_ORDERS = 'BUY_ORDERS';
+export const BINANCE_BUY_ORDERS = 'BINANCE_BUY_ORDERS';
+export const OKX_BUY_ORDERS = 'OKX_BUY_ORDERS';

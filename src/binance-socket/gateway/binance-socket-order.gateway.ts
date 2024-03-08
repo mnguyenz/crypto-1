@@ -5,8 +5,8 @@ import { Cache } from 'cache-manager';
 import { OrderRepository } from '~orders/order.repository';
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { OrderEntity } from '~entities/order.entity';
-import { BinanceApiOrderService } from '~binance-api/services/binance-api-order.service';
-import { BUY_ORDERS } from '~core/constants/cache-manager.constant';
+import { BinanceOrderService } from '~binance-api/services/binance-order.service';
+import { BINANCE_BUY_ORDERS } from '~core/constants/cache-manager.constant';
 
 @Injectable()
 export class BinanceSocketOrderGateway implements OnModuleInit {
@@ -14,7 +14,7 @@ export class BinanceSocketOrderGateway implements OnModuleInit {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private client: WebsocketStream,
         private orderRepository: OrderRepository,
-        private binanceApiOrderService: BinanceApiOrderService
+        private binanceOrderService: BinanceOrderService
     ) {}
 
     async onModuleInit() {
@@ -33,20 +33,21 @@ export class BinanceSocketOrderGateway implements OnModuleInit {
     }
 
     async checkPrice(data: any): Promise<void> {
-        if (!(await this.cacheManager.get(BUY_ORDERS))) {
+        if (!(await this.cacheManager.get(BINANCE_BUY_ORDERS))) {
             await this.setBuyOrders();
         }
         const { s: symbol, c: currentPrice } = data;
-        const order = ((await this.cacheManager.get(BUY_ORDERS)) as OrderEntity[]).filter((order) => {
+        const order = ((await this.cacheManager.get(BINANCE_BUY_ORDERS)) as OrderEntity[]).filter((order) => {
             return symbol === order.symbol && currentPrice <= order.price * 1.01;
         });
         if (order.length) {
             const matchOrder = order[0];
-            const updatedOrders = ((await this.cacheManager.get(BUY_ORDERS)) as OrderEntity[]).filter(
+            const updatedOrders = ((await this.cacheManager.get(BINANCE_BUY_ORDERS)) as OrderEntity[]).filter(
                 (order) => order.id !== matchOrder.id
             );
-            this.cacheManager.set(BUY_ORDERS, updatedOrders);
-            this.binanceApiOrderService.redeemThenOrder({ symbol, price: order[0].price, quantity: order[0].quantity });
+            await this.cacheManager.set(BINANCE_BUY_ORDERS, updatedOrders);
+            this.binanceOrderService.redeemThenOrder({ symbol, price: order[0].price, quantity: order[0].quantity });
+            await this.orderRepository.softDelete({ id: matchOrder.id });
         }
     }
 
@@ -54,7 +55,7 @@ export class BinanceSocketOrderGateway implements OnModuleInit {
         const buyOrders = await this.orderRepository.find({
             where: { side: Side.BUY, exchange: Exchanges.BINANCE }
         });
-        await this.cacheManager.set(BUY_ORDERS, buyOrders, 0);
+        await this.cacheManager.set(BINANCE_BUY_ORDERS, buyOrders, 0);
         return buyOrders;
     }
 }

@@ -1,8 +1,9 @@
 import { Side } from '@binance/connector-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import faker from 'faker';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Exchanges } from '~core/enums/exchanges.enum';
+import { TimestampTransformer } from '~core/transforms/timestamp.transformer';
 
 @Entity('Order')
 export class OrderEntity {
@@ -28,4 +29,7 @@ export class OrderEntity {
     @ApiProperty({ example: Exchanges.BINANCE })
     @Column()
     exchange: Exchanges;
+
+    @DeleteDateColumn({ type: 'timestamp', transformer: new TimestampTransformer() })
+    deletedAt: number;
 }

@@ -8,7 +8,7 @@ import { OrderEntity } from '~entities/order.entity';
 import { CreateOrderDto } from '~orders/dtos/create-order.dto';
 import { OrderRepository } from '~orders/order.repository';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
-import { BUY_ORDERS } from '~core/constants/cache-manager.constant';
+import { BINANCE_BUY_ORDERS } from '~core/constants/cache-manager.constant';
 
 @Injectable()
 export class OrderService {
@@ -24,8 +24,8 @@ export class OrderService {
 
     async createOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
         this.cacheManager.set(
-            BUY_ORDERS,
-            ((await this.cacheManager.get(BUY_ORDERS)) as OrderEntity[]).concat(createOrderDto),
+            BINANCE_BUY_ORDERS,
+            ((await this.cacheManager.get(BINANCE_BUY_ORDERS)) as OrderEntity[]).concat(createOrderDto),
             0
         );
         return this.orderRepository.insert(createOrderDto);

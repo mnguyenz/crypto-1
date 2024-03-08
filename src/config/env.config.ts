@@ -15,5 +15,11 @@ export const env = {
         API_URL: process.env.BINANCE_API_URL,
         API_KEY: process.env.BINANCE_API_KEY,
         API_SECRET: process.env.BINANCE_API_SECRET
+    },
+    OKX: {
+        API_URL: process.env.BINANCE_API_URL,
+        API_KEY: process.env.OKX_API_KEY,
+        API_SECRET: process.env.OKX_API_SECRET,
+        API_PASS: process.env.OKX_API_PASS
     }
 };

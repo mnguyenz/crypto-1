@@ -1,6 +1,6 @@
 import { OrderType, TimeInForce } from '@binance/connector-typescript';
 import { Injectable } from '@nestjs/common';
-import { NewLimitOrderParam } from '~binance-api/types/new-limit-order.param';
+import { NewLimitOrderParam } from '~core/types/new-limit-order.param';
 import { BINANCE_CLIENT } from '~core/constants/binance.constant';
 
 @Injectable()

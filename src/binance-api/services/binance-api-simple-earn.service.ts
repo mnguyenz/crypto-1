@@ -14,7 +14,7 @@ export class BinanceApiSimpleEarnService {
                 destAccount: RedeemDestAccount.SPOT
             });
         } catch (error) {
-            console.error('redeemUSDT error:', error);
+            console.error('redeemUSDT Binance error:', error);
         }
     }
 }
