@@ -9,13 +9,15 @@ import { CreateOrderDto } from '~orders/dtos/create-order.dto';
 import { OrderRepository } from '~orders/order.repository';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
 import { BINANCE_BUY_ORDERS } from '~core/constants/cache-manager.constant';
+import { OkxApiMarketService } from '~okx-api/services/okx-api-market.service';
 
 @Injectable()
 export class OrderService {
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private orderRepository: OrderRepository,
-        private binanceApiMarketService: BinanceApiMarketService
+        private binanceApiMarketService: BinanceApiMarketService,
+        private okxApiMarketService: OkxApiMarketService
     ) {}
 
     getOrder(exchange: Exchanges): Promise<OrderEntity[]> {
@@ -35,15 +37,27 @@ export class OrderService {
         const orders = await this.orderRepository.find();
         const result: CompareOrderVsCurrentPriceResponse[] = [];
         for (const order of orders) {
-            const { symbol, price } = order;
-            const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 1);
-            const currentPrice = binanceOrderBook.bids[0][0];
-            result.push({
-                symbol,
-                currentPrice,
-                orderPrice: price,
-                percentageReduction: ((currentPrice - order.price) / order.price) * 100
-            });
+            const { symbol, price, exchange } = order;
+            if (exchange === Exchanges.BINANCE) {
+                const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 1);
+                const currentPrice = binanceOrderBook.bids[0][0];
+                result.push({
+                    symbol,
+                    currentPrice,
+                    orderPrice: price,
+                    percentageReduction: ((currentPrice - order.price) / order.price) * 100
+                });
+            } else if (exchange === Exchanges.OKX) {
+                console.log(symbol);
+                const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 1);
+                const currentPrice = okxOrderBook.bids[0][0];
+                result.push({
+                    symbol,
+                    currentPrice,
+                    orderPrice: price,
+                    percentageReduction: ((currentPrice - order.price) / order.price) * 100
+                });
+            }
         }
         return result.sort((a, b) => a.percentageReduction - b.percentageReduction);
     }

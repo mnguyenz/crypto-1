@@ -26,5 +26,4 @@ export class OrderController {
     compareOrderVsCurrentPrice(): Promise<CompareOrderVsCurrentPriceResponse[]> {
         return this.orderService.compareOrderVsCurrentPrice();
     }
-
 }
