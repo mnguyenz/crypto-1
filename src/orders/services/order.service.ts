@@ -21,7 +21,11 @@ export class OrderService {
     ) {}
 
     getOrder(exchange: Exchanges): Promise<OrderEntity[]> {
-        return this.orderRepository.find({ where: { exchange } });
+        if (exchange) {
+            return this.orderRepository.find({ where: { exchange } });
+        } else {
+            return this.orderRepository.find();
+        }
     }
 
     async createOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
@@ -48,7 +52,6 @@ export class OrderService {
                     percentageReduction: ((currentPrice - order.price) / order.price) * 100
                 });
             } else if (exchange === Exchanges.OKX) {
-                console.log(symbol);
                 const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 1);
                 const currentPrice = okxOrderBook.bids[0][0];
                 result.push({

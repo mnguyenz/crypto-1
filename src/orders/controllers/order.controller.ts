@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { OrderEntity } from '~entities/order.entity';
 import { Exchanges } from '~core/enums/exchanges.enum';
@@ -7,13 +7,13 @@ import { CreateOrderDto } from '~orders/dtos/create-order.dto';
 import { OrderService } from '~orders/services/order.service';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
 
-@Controller('order')
-@ApiTags('Order')
+@Controller('orders')
+@ApiTags('Orders')
 export class OrderController {
     constructor(private orderService: OrderService) {}
 
     @Get()
-    getOrder(@Param('exchange') exchange: Exchanges): Promise<OrderEntity[]> {
+    getOrder(@Query('exchange') exchange?: Exchanges): Promise<OrderEntity[]> {
         return this.orderService.getOrder(exchange);
     }
 

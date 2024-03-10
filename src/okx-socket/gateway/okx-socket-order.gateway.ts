@@ -38,7 +38,7 @@ export class OkxSocketOrderGateway implements OnModuleInit {
         }
         const { instId: symbol, bidPx: currentPrice } = data.data[0];
         const order = ((await this.cacheManager.get(OKX_BUY_ORDERS)) as OrderEntity[]).filter((order) => {
-            return symbol === order.symbol && currentPrice <= order.price * 1.01;
+            return symbol === order.symbol && currentPrice <= order.price * 1.0025;
         });
         if (order.length) {
             const matchOrder = order[0];
@@ -46,6 +46,7 @@ export class OkxSocketOrderGateway implements OnModuleInit {
                 (order) => order.id !== matchOrder.id
             );
             await this.cacheManager.set(OKX_BUY_ORDERS, updatedOrders);
+            this.okxOrderService.redeemThenOrder({ symbol, price: order[0].price, quantity: order[0].quantity });
             await this.orderRepository.softDelete({ id: matchOrder.id });
         }
     }

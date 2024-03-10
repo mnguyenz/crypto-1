@@ -15,7 +15,6 @@ export class OkxOrderService {
     async redeemThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
         const { symbol, price, quantity } = redeemThenOrderParam;
         try {
-            console.log(roundUp(price * quantity * 1.001, 8));
             await this.okxApiEarnService.redeemUSDT(roundUp(price * quantity * 1.001, 8));
             await this.okxApiTradeService.newLimitOrder({
                 symbol,
