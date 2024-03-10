@@ -8,14 +8,15 @@ import { OrderEntity } from '~entities/order.entity';
 import { CreateOrderDto } from '~orders/dtos/create-order.dto';
 import { OrderRepository } from '~orders/order.repository';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
-import { BINANCE_BUY_ORDERS } from '~core/constants/cache-manager.constant';
 import { OkxApiMarketService } from '~okx-api/services/okx-api-market.service';
+import { OrderSocketService } from './order-socket.service';
 
 @Injectable()
 export class OrderService {
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private orderRepository: OrderRepository,
+        private orderSocketService: OrderSocketService,
         private binanceApiMarketService: BinanceApiMarketService,
         private okxApiMarketService: OkxApiMarketService
     ) {}
@@ -29,11 +30,9 @@ export class OrderService {
     }
 
     async createOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
-        this.cacheManager.set(
-            BINANCE_BUY_ORDERS,
-            ((await this.cacheManager.get(BINANCE_BUY_ORDERS)) as OrderEntity[]).concat(createOrderDto),
-            0
-        );
+        const { side, exchange } = createOrderDto;
+        const orders = await this.orderSocketService.getOrdersFromCache(side, exchange);
+        await this.orderSocketService.setOrdersToCache(orders.concat(createOrderDto), side, exchange);
         return this.orderRepository.insert(createOrderDto);
     }
 

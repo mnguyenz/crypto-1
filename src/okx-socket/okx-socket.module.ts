@@ -3,10 +3,11 @@ import { TypeOrmHelperModule } from '~core/modules/typeorm-module.module';
 import { OrderRepository } from '~orders/order.repository';
 import { OkxSocketOrderGateway } from './gateway/okx-socket-order.gateway';
 import { OkxApiModule } from '~okx-api/okx-api.module';
+import { OrderModule } from '~orders/order.module';
 
 @Global()
 @Module({
-    imports: [TypeOrmHelperModule.forCustomRepository([OrderRepository]), OkxApiModule],
+    imports: [TypeOrmHelperModule.forCustomRepository([OrderRepository]), OkxApiModule, OrderModule],
     providers: [OkxSocketOrderGateway],
     exports: []
 })
