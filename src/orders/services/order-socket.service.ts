@@ -31,7 +31,7 @@ export class OrderSocketService {
         return orders;
     }
 
-    async checkPrice(exchange: Exchanges, data: any): Promise<void> {
+    async checkOrderPrice(exchange: Exchanges, data: any): Promise<void> {
         if (!(await this.cacheManager.get(BINANCE_BUY_ORDERS))) {
             this.setOrders(Side.BUY, Exchanges.BINANCE);
         }
@@ -65,20 +65,46 @@ export class OrderSocketService {
             const orders = await this.getOrdersFromCache(side, exchange);
             const updatedOrders = orders.filter((order) => order.id !== matchOrder.id);
             await this.setOrdersToCache(updatedOrders, side, exchange);
-            if (side === Side.BUY) {
-                if (exchange === Exchanges.BINANCE) {
-                    this.binanceOrderService.redeemThenOrder({
-                        symbol,
-                        price: matchOrder.price,
-                        quantity: matchOrder.quantity
-                    });
-                } else if (exchange === Exchanges.OKX) {
-                    this.okxOrderService.redeemThenOrder({
-                        symbol,
-                        price: matchOrder.price,
-                        quantity: matchOrder.quantity
-                    });
-                }
+            if (exchange === Exchanges.BINANCE) {
+                this.binanceOrderService.redeemUSDTThenOrder({
+                    symbol,
+                    price: matchOrder.price,
+                    quantity: matchOrder.quantity
+                });
+            } else if (exchange === Exchanges.OKX) {
+                this.okxOrderService.redeemThenOrder({
+                    symbol,
+                    price: matchOrder.price,
+                    quantity: matchOrder.quantity
+                });
+            }
+            await this.orderRepository.softDelete({ id: matchOrder.id });
+        }
+
+        const sellOrders = [
+            ...((await this.cacheManager.get(OKX_SELL_ORDERS)) as OrderEntity[]),
+            ...((await this.cacheManager.get(BINANCE_SELL_ORDERS)) as OrderEntity[])
+        ].filter((order) => {
+            return symbol === order.symbol && currentPrice >= order.price * 0.9965;
+        });
+        if (sellOrders.length) {
+            const matchOrder = sellOrders[0];
+            const { side, exchange } = matchOrder;
+            const orders = await this.getOrdersFromCache(side, exchange);
+            const updatedOrders = orders.filter((order) => order.id !== matchOrder.id);
+            await this.setOrdersToCache(updatedOrders, side, exchange);
+            if (exchange === Exchanges.BINANCE) {
+                this.binanceOrderService.redeemCryptoThenOrder({
+                    symbol,
+                    price: matchOrder.price,
+                    quantity: matchOrder.quantity
+                });
+            // } else if (exchange === Exchanges.OKX) {
+            //     this.okxOrderService.redeemThenOrder({
+            //         symbol,
+            //         price: matchOrder.price,
+            //         quantity: matchOrder.quantity
+            //     });
             }
             await this.orderRepository.softDelete({ id: matchOrder.id });
         }

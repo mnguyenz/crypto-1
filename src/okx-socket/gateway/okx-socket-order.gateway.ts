@@ -12,13 +12,13 @@ export class OkxSocketOrderGateway implements OnModuleInit {
 
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
-        private orderSocketService: OrderSocketService,
+        private orderSocketService: OrderSocketService
     ) {}
 
     async onModuleInit() {
         this.client = new WebsocketClient({});
         this.client.on('update', (data) => {
-            this.orderSocketService.checkPrice(Exchanges.OKX, data);
+            this.orderSocketService.checkOrderPrice(Exchanges.OKX, data);
         });
         const [buyOrders, sellOrders] = await Promise.all([
             this.orderSocketService.setOrders(Side.BUY, Exchanges.OKX),

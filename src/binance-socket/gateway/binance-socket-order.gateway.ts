@@ -20,7 +20,7 @@ export class BinanceSocketOrderGateway implements OnModuleInit {
             open: () => console.info('Connected to BinanceSocketOrderGateway'),
             close: () => console.error('Disconnected from BinanceSocketOrderGateway'),
             message: (data: any) => {
-                this.orderSocketService.checkPrice(Exchanges.BINANCE, JSON.parse(data));
+                this.orderSocketService.checkOrderPrice(Exchanges.BINANCE, JSON.parse(data));
             }
         };
 
