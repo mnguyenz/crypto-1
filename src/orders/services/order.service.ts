@@ -10,6 +10,7 @@ import { OrderRepository } from '~orders/order.repository';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
 import { OkxApiMarketService } from '~okx-api/services/okx-api-market.service';
 import { OrderSocketService } from './order-socket.service';
+import { Side } from '@binance/connector-typescript';
 
 @Injectable()
 export class OrderService {
@@ -30,7 +31,15 @@ export class OrderService {
     }
 
     async createOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
-        const { side, exchange } = createOrderDto;
+        const { symbol, side, exchange } = createOrderDto;
+        const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 1);
+        const currentPrice = binanceOrderBook.bids[0][0];
+        if (side === Side.BUY && currentPrice < createOrderDto.price) {
+            return;
+        }
+        if (side === Side.SELL && currentPrice > createOrderDto.price) {
+            return;
+        }
         const orders = await this.orderSocketService.getOrdersFromCache(side, exchange);
         await this.orderSocketService.setOrdersToCache(orders.concat(createOrderDto), side, exchange);
         return this.orderRepository.insert(createOrderDto);
@@ -40,27 +49,28 @@ export class OrderService {
         const orders = await this.orderRepository.find();
         const result: CompareOrderVsCurrentPriceResponse[] = [];
         for (const order of orders) {
-            const { symbol, price, exchange } = order;
+            const { symbol, side, price, exchange } = order;
+            let currentPrice;
             if (exchange === Exchanges.BINANCE) {
                 const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 1);
-                const currentPrice = binanceOrderBook.bids[0][0];
-                result.push({
-                    symbol,
-                    currentPrice,
-                    orderPrice: price,
-                    percentageReduction: ((currentPrice - order.price) / order.price) * 100
-                });
+                currentPrice = binanceOrderBook.bids[0][0];
             } else if (exchange === Exchanges.OKX) {
                 const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 1);
-                const currentPrice = okxOrderBook.bids[0][0];
-                result.push({
-                    symbol,
-                    currentPrice,
-                    orderPrice: price,
-                    percentageReduction: ((currentPrice - order.price) / order.price) * 100
-                });
+                currentPrice = okxOrderBook.bids[0][0];
             }
+            let percentage;
+            if (side === Side.BUY) {
+                percentage = ((currentPrice - order.price) / order.price) * 100;
+            } else {
+                percentage = -((order.price - currentPrice) / currentPrice) * 100;
+            }
+            result.push({
+                symbol,
+                currentPrice,
+                orderPrice: price,
+                percentage
+            });
         }
-        return result.sort((a, b) => a.percentageReduction - b.percentageReduction);
+        return result.sort((a, b) => a.percentage - b.percentage);
     }
 }
