@@ -32,12 +32,18 @@ export class OrderService {
 
     async createOrder(createOrderDto: CreateOrderDto): Promise<InsertResult> {
         const { symbol, side, exchange } = createOrderDto;
-        const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 1);
-        const currentPrice = binanceOrderBook.bids[0][0];
-        if (side === Side.BUY && currentPrice < createOrderDto.price) {
-            return;
+        let currentPrice;
+        if (exchange === Exchanges.BINANCE) {
+            const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 1);
+            currentPrice = binanceOrderBook.bids[0][0];
+        } else if (exchange === Exchanges.OKX) {
+            const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 1);
+            currentPrice = okxOrderBook.bids[0][0];
         }
-        if (side === Side.SELL && currentPrice > createOrderDto.price) {
+        if (
+            (side === Side.BUY && currentPrice < createOrderDto.price) ||
+            (side === Side.SELL && currentPrice > createOrderDto.price)
+        ) {
             return;
         }
         const orders = await this.orderSocketService.getOrdersFromCache(side, exchange);
