@@ -99,12 +99,12 @@ export class OrderSocketService {
                     price: matchOrder.price,
                     quantity: matchOrder.quantity
                 });
-            // } else if (exchange === Exchanges.OKX) {
-            //     this.okxOrderService.redeemThenOrder({
-            //         symbol,
-            //         price: matchOrder.price,
-            //         quantity: matchOrder.quantity
-            //     });
+                // } else if (exchange === Exchanges.OKX) {
+                //     this.okxOrderService.redeemThenOrder({
+                //         symbol,
+                //         price: matchOrder.price,
+                //         quantity: matchOrder.quantity
+                //     });
             }
             await this.orderRepository.softDelete({ id: matchOrder.id });
         }

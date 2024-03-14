@@ -19,4 +19,23 @@ export class BinanceApiTradeService {
             console.error('newOrder error:', error);
         }
     }
+
+    async retryNewOrder(newLimitOrderParam: NewLimitOrderParam, attempedCount: number): Promise<any> {
+        const { symbol, side, quantity, price } = newLimitOrderParam;
+        try {
+            await BINANCE_CLIENT.newOrder(symbol, side, OrderType.LIMIT, {
+                timeInForce: TimeInForce.GTC,
+                quantity,
+                price
+            });
+        } catch (error) {
+            console.log('attempedCount:', attempedCount);
+            attempedCount += 1;
+            if (attempedCount < 1000) {
+                return await this.retryNewOrder(newLimitOrderParam, attempedCount);
+            } else {
+                return error;
+            }
+        }
+    }
 }

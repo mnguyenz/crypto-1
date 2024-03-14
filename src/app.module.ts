@@ -7,9 +7,18 @@ import { scheduleConfig } from '~config/schedule.config';
 import { GlobalCacheModule } from '~config/cache.config';
 import { OrderModule } from '~orders/order.module';
 import { OkxSocketModule } from '~okx-socket/okx-socket.module';
+import { TaskModule } from '~tasks/task.module';
 
 @Module({
-    imports: [databaseConfig, scheduleConfig, GlobalCacheModule, BinanceSocketModule, OkxSocketModule, OrderModule],
+    imports: [
+        databaseConfig,
+        scheduleConfig,
+        GlobalCacheModule,
+        BinanceSocketModule,
+        OkxSocketModule,
+        OrderModule,
+        TaskModule
+    ],
     controllers: [AppController],
     providers: [AppService]
 })
