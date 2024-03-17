@@ -52,14 +52,14 @@ export const ASSETS = {
     }
 };
 
-export const SYMBOLS = {
+export const BINANCE_SYMBOLS = {
     BTCUSDT: 'BTCUSDT',
     ETHUSDT: 'ETHUSDT',
-    MDTUSDT: 'MDTUSDT',
-    IQUSDT: 'IQUSDT',
-    AIUSDT: 'AIUSDT',
-    NFPUSDT: 'NFPUSDT',
-    ALTUSDT: 'ALTUSDT',
-    XAIUSDT: 'XAIUSDT',
-    PROSUSDT: 'PROSUSDT'
+    SOLUSDT: 'SOLUSDT'
+};
+
+export const OKX_SYMBOLS = {
+    BTCUSDT: 'BTC-USDT',
+    ETHUSDT: 'ETH-USDT',
+    SOLUSDT: 'SOL-USDT'
 };

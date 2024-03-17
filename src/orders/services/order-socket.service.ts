@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { OrderEntity } from '~entities/order.entity';
-import { OrderRepository } from '~orders/order.repository';
+import { OrderRepository } from '~repositories/order.repository';
 import {
     BINANCE_BUY_ORDERS,
     BINANCE_SELL_ORDERS,
@@ -66,13 +66,13 @@ export class OrderSocketService {
             const updatedOrders = orders.filter((order) => order.id !== matchOrder.id);
             await this.setOrdersToCache(updatedOrders, side, exchange);
             if (exchange === Exchanges.BINANCE) {
-                this.binanceOrderService.redeemUSDTThenOrder({
+                this.binanceOrderService.redeemUSDThenOrder({
                     symbol,
                     price: matchOrder.price,
                     quantity: matchOrder.quantity
                 });
             } else if (exchange === Exchanges.OKX) {
-                this.okxOrderService.redeemThenOrder({
+                this.okxOrderService.redeemUSDThenOrder({
                     symbol,
                     price: matchOrder.price,
                     quantity: matchOrder.quantity

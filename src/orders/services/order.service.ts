@@ -6,7 +6,7 @@ import { BinanceApiMarketService } from '~binance-api/services/binance-api-marke
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { OrderEntity } from '~entities/order.entity';
 import { CreateOrderDto } from '~orders/dtos/create-order.dto';
-import { OrderRepository } from '~orders/order.repository';
+import { OrderRepository } from '~repositories/order.repository';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
 import { OkxApiMarketService } from '~okx-api/services/okx-api-market.service';
 import { OrderSocketService } from './order-socket.service';
