@@ -7,7 +7,7 @@ import { BuyDipRepository } from '~repositories/buy-dip.repository';
 export class BuyDipTask {
     constructor(private buyDipRepository: BuyDipRepository) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_12_HOURS)
     async restoreBuyDip(): Promise<void> {
         const currentTime = Math.floor(Date.now() / 1000);
         const oneDayAgo = currentTime - 24 * 60 * 60;
