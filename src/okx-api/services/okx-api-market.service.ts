@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OKX_REST_PRIVATE_CLIENT } from '~core/constants/okx.constant';
-import { GetOrderBookResponse } from '~orders/types/get-order-book.response';
+import { GetOrderBookResponse } from '~orders/responses/get-order-book.response';
 
 @Injectable()
 export class OkxApiMarketService {

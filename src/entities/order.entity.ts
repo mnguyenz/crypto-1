@@ -2,7 +2,7 @@ import { Side } from '@binance/connector-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import faker from 'faker';
 import { Column, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { BINANCE_SYMBOLS } from '~core/constants/crypto-code.constant';
+import { ASSETS } from '~core/constants/crypto-code.constant';
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { TimestampTransformer } from '~core/transforms/timestamp.transformer';
 
@@ -11,9 +11,9 @@ export class OrderEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ApiProperty({ example: BINANCE_SYMBOLS.BTCUSDT })
+    @ApiProperty({ example: ASSETS.CRYPTO.BTC })
     @Column()
-    symbol: string;
+    asset: string;
 
     @ApiProperty({ example: Side.BUY })
     @Column()

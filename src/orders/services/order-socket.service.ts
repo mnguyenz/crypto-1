@@ -2,7 +2,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { Exchanges } from '~core/enums/exchanges.enum';
-import { OrderEntity } from '~entities/order.entity';
 import { OrderRepository } from '~repositories/order.repository';
 import {
     BINANCE_BUY_ORDERS,
@@ -13,22 +12,45 @@ import {
 import { Side } from '@binance/connector-typescript';
 import { BinanceOrderService } from '~binance-api/services/binance-order.service';
 import { OkxOrderService } from '~okx-api/services/okx-order.service';
+import { CacheOrder } from '~orders/types/cache-order.type';
+import { BinanceApiMarketService } from '~binance-api/services/binance-api-market.service';
+import { BINANCE_POSTFIX_SYMBOL_FDUSD, BINANCE_POSTFIX_SYMBOL_USDT } from '~core/constants/binance.constant';
+import { OKX_POSTFIX_SYMBOL_USDT } from '~core/constants/okx.constant';
 
 @Injectable()
 export class OrderSocketService {
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
+        private binanceApiMarketService: BinanceApiMarketService,
         private binanceOrderService: BinanceOrderService,
         private okxOrderService: OkxOrderService,
         private orderRepository: OrderRepository
     ) {}
 
-    async setOrders(side: Side, exchange: Exchanges): Promise<OrderEntity[]> {
+    async setOrders(side: Side, exchange: Exchanges): Promise<CacheOrder[]> {
         const orders = await this.orderRepository.find({
             where: { side, exchange }
         });
-        await this.setOrdersToCache(orders, side, exchange);
-        return orders;
+        const cachedOrders = [];
+        for (const order of orders) {
+            let symbol;
+            if (exchange === Exchanges.BINANCE) {
+                const exchangeInforFDUSD = await this.binanceApiMarketService.checkIsFDUSDSymbol(order.asset);
+                if (exchangeInforFDUSD) {
+                    symbol = `${order.asset}${BINANCE_POSTFIX_SYMBOL_FDUSD}`;
+                } else {
+                    symbol = `${order.asset}${BINANCE_POSTFIX_SYMBOL_USDT}`;
+                }
+            } else if (exchange === Exchanges.OKX) {
+                symbol = `${order.asset}${OKX_POSTFIX_SYMBOL_USDT}`;
+            }
+            cachedOrders.push({
+                ...order,
+                symbol
+            });
+        }
+        await this.setOrdersToCache(cachedOrders, side, exchange);
+        return cachedOrders;
     }
 
     async checkOrderPrice(exchange: Exchanges, data: any): Promise<void> {
@@ -53,11 +75,13 @@ export class OrderSocketService {
             symbol = data.data[0].instId;
             currentPrice = data.data[0].last;
         }
+        const okxBuyOrders: CacheOrder[] = await this.cacheManager.get(OKX_BUY_ORDERS);
+        const binanceBuyOrders: CacheOrder[] = await this.cacheManager.get(BINANCE_BUY_ORDERS);
         const buyOrders = [
-            ...((await this.cacheManager.get(OKX_BUY_ORDERS)) as OrderEntity[]),
-            ...((await this.cacheManager.get(BINANCE_BUY_ORDERS)) as OrderEntity[])
-        ].filter((order) => {
-            return symbol === order.symbol && currentPrice <= order.price * 1.0035;
+            ...(Array.isArray(okxBuyOrders) ? okxBuyOrders : []),
+            ...(Array.isArray(binanceBuyOrders) ? binanceBuyOrders : [])
+        ].filter((order: CacheOrder) => {
+            return symbol === order.symbol && currentPrice <= order.price * 3;
         });
         if (buyOrders.length) {
             const matchOrder = buyOrders[0];
@@ -81,10 +105,12 @@ export class OrderSocketService {
             await this.orderRepository.softDelete({ id: matchOrder.id });
         }
 
+        const okxSellOrders: CacheOrder[] = await this.cacheManager.get(OKX_SELL_ORDERS);
+        const binanceSellOrders: CacheOrder[] = await this.cacheManager.get(BINANCE_SELL_ORDERS);
         const sellOrders = [
-            ...((await this.cacheManager.get(OKX_SELL_ORDERS)) as OrderEntity[]),
-            ...((await this.cacheManager.get(BINANCE_SELL_ORDERS)) as OrderEntity[])
-        ].filter((order) => {
+            ...(Array.isArray(okxSellOrders) ? okxSellOrders : []),
+            ...(Array.isArray(binanceSellOrders) ? binanceSellOrders : [])
+        ].filter((order: CacheOrder) => {
             return symbol === order.symbol && currentPrice >= order.price * 0.9965;
         });
         if (sellOrders.length) {
@@ -94,11 +120,11 @@ export class OrderSocketService {
             const updatedOrders = orders.filter((order) => order.id !== matchOrder.id);
             await this.setOrdersToCache(updatedOrders, side, exchange);
             if (exchange === Exchanges.BINANCE) {
-                this.binanceOrderService.redeemCryptoThenOrder({
-                    symbol,
-                    price: matchOrder.price,
-                    quantity: matchOrder.quantity
-                });
+                // this.binanceOrderService.redeemCryptoThenOrder({
+                //     symbol,
+                //     price: matchOrder.price,
+                //     quantity: matchOrder.quantity
+                // });
                 // } else if (exchange === Exchanges.OKX) {
                 //     this.okxOrderService.redeemThenOrder({
                 //         symbol,
@@ -110,7 +136,7 @@ export class OrderSocketService {
         }
     }
 
-    async getOrdersFromCache(side: Side, exchange: Exchanges): Promise<OrderEntity[]> {
+    async getOrdersFromCache(side: Side, exchange: Exchanges): Promise<CacheOrder[]> {
         switch (true) {
             case side === Side.BUY && exchange === Exchanges.BINANCE:
                 return (await this.cacheManager.get(BINANCE_BUY_ORDERS)) || Promise.resolve([]);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { BINANCE_CLIENT } from '~core/constants/binance.constant';
-import { GetOrderBookResponse } from '~orders/types/get-order-book.response';
+import { BINANCE_CLIENT, BINANCE_POSTFIX_SYMBOL_FDUSD } from '~core/constants/binance.constant';
+import { GetOrderBookResponse } from '~orders/responses/get-order-book.response';
 
 @Injectable()
 export class BinanceApiMarketService {
@@ -13,5 +13,18 @@ export class BinanceApiMarketService {
             bids: orderBookResponse.bids.map((bid) => bid.map(Number)),
             asks: orderBookResponse.asks.map((ask) => ask.map(Number))
         };
+    }
+
+    async checkIsFDUSDSymbol(asset: string): Promise<boolean> {
+        try {
+            const exchangeInforFDUSD = await BINANCE_CLIENT.exchangeInformation({
+                symbol: `${asset}${BINANCE_POSTFIX_SYMBOL_FDUSD}`
+            });
+            if (exchangeInforFDUSD) {
+                return true;
+            }
+        } catch (error) {
+            return false;
+        }
     }
 }

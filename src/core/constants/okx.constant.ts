@@ -6,3 +6,5 @@ export const OKX_REST_PRIVATE_CLIENT = new RestClient({
     apiSecret: env.OKX.API_SECRET,
     apiPass: env.OKX.API_PASS
 });
+
+export const OKX_POSTFIX_SYMBOL_USDT = '-USDT';

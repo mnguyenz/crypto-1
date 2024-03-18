@@ -6,6 +6,8 @@ import { Exchanges } from '~core/enums/exchanges.enum';
 import { OrderSocketService } from '~orders/services/order-socket.service';
 import { BINANCE_MONITOR_SYMBOLS } from '~core/constants/monitor-symbols.constant';
 import { BuyDipService } from '~algorithms/services/buy-dip.service';
+import { BinanceApiMarketService } from '~binance-api/services/binance-api-market.service';
+import { BINANCE_POSTFIX_SYMBOL_FDUSD, BINANCE_POSTFIX_SYMBOL_USDT } from '~core/constants/binance.constant';
 
 @Injectable()
 export class BinanceSocketOrderGateway implements OnModuleInit {
@@ -13,6 +15,7 @@ export class BinanceSocketOrderGateway implements OnModuleInit {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private streamClient: WebsocketStream,
         private streamClientTicker: WebsocketStream,
+        private binanceApiMarketService: BinanceApiMarketService,
         private orderSocketService: OrderSocketService,
         private buyDipService: BuyDipService
     ) {}
@@ -31,8 +34,15 @@ export class BinanceSocketOrderGateway implements OnModuleInit {
             this.orderSocketService.setOrders(Side.BUY, Exchanges.BINANCE),
             this.orderSocketService.setOrders(Side.SELL, Exchanges.BINANCE)
         ]);
-        const distinctSymbols = [...new Set([...buyOrders, ...sellOrders].map((order) => order.symbol))];
-        for (const symbol of distinctSymbols) {
+        const distinctAssets = [...new Set([...buyOrders, ...sellOrders].map((order) => order.asset))];
+        for (const asset of distinctAssets) {
+            let symbol: string;
+            const exchangeInforFDUSD = await this.binanceApiMarketService.checkIsFDUSDSymbol(asset);
+            if (exchangeInforFDUSD) {
+                symbol = `${asset}${BINANCE_POSTFIX_SYMBOL_FDUSD}`;
+            } else {
+                symbol = `${asset}${BINANCE_POSTFIX_SYMBOL_USDT}`;
+            }
             this.streamClient.miniTicker(symbol);
         }
 

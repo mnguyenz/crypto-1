@@ -9,7 +9,7 @@ import { COIN_NAME } from '~tasks/constants/new-listing.constant';
 export class NewListingTask {
     constructor(private binanceApiTradeService: BinanceApiTradeService) {}
 
-    @Cron(AT_6PM_59MIN_59SEC)
+    // @Cron(AT_6PM_59MIN_59SEC)
     async buyAndSellNewListing(): Promise<void> {
         // USDT
         this.binanceApiTradeService.retryNewOrder(

@@ -15,11 +15,12 @@ export class BinanceOrderService {
     ) {}
 
     async redeemUSDThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
+        console.log('redeemThenOrderParam:', redeemThenOrderParam);
         const { symbol, price, quantity } = redeemThenOrderParam;
         try {
-            if (symbol.includes(ASSETS.FIAT.USDT)) {
+            if (symbol.endsWith(ASSETS.FIAT.USDT)) {
                 await this.binanceApiSimpleEarnService.redeem(ASSETS.FIAT.USDT, roundUp(price * quantity * 1.001, 8));
-            } else if (symbol.includes(ASSETS.FIAT.FDUSD)) {
+            } else if (symbol.endsWith(ASSETS.FIAT.FDUSD)) {
                 await this.binanceApiSimpleEarnService.redeem(ASSETS.FIAT.FDUSD, roundUp(price * quantity * 1.001, 8));
             }
             await this.binanceApiTradeService.newLimitOrder({

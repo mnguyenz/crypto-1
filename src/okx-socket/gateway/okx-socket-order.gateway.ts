@@ -5,6 +5,7 @@ import { WebsocketClient } from 'okx-api';
 import { Side } from '@binance/connector-typescript';
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { OrderSocketService } from '~orders/services/order-socket.service';
+import { OKX_POSTFIX_SYMBOL_USDT } from '~core/constants/okx.constant';
 
 @Injectable()
 export class OkxSocketOrderGateway implements OnModuleInit {
@@ -24,7 +25,9 @@ export class OkxSocketOrderGateway implements OnModuleInit {
             this.orderSocketService.setOrders(Side.BUY, Exchanges.OKX),
             this.orderSocketService.setOrders(Side.SELL, Exchanges.OKX)
         ]);
-        const distinctSymbols = [...new Set([...buyOrders, ...sellOrders].map((order) => order.symbol))];
+        const distinctSymbols = [
+            ...new Set([...buyOrders, ...sellOrders].map((order) => `${order.asset}${OKX_POSTFIX_SYMBOL_USDT}`))
+        ];
         for (const symbol of distinctSymbols) {
             this.client.subscribe({
                 channel: 'tickers',

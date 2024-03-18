@@ -8,8 +8,11 @@ export class BinanceApiSimpleEarnService {
 
     async redeem(asset: string, amount: number): Promise<void> {
         try {
+            console.log('asset:', asset, 'amount:', amount);
             const simpleEarnProduct = await BINANCE_CLIENT.getSimpleEarnFlexibleProductList({ asset });
+            console.log('simpleEarnProduct:', simpleEarnProduct);
             const productId = simpleEarnProduct.rows[0].productId;
+            console.log('productId:', productId);
             await BINANCE_CLIENT.redeemFlexibleProduct(productId, {
                 amount,
                 destAccount: RedeemDestAccount.SPOT
