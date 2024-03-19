@@ -7,10 +7,10 @@ import { Side } from '@binance/connector-typescript';
 export class OkxApiTradeService {
     constructor() {}
 
-    async newLimitOrder(newLimitOrderParam: NewLimitOrderParam): Promise<void> {
+    async newLimitOrder(newLimitOrderParam: NewLimitOrderParam): Promise<any> {
         const { symbol, side, quantity, price } = newLimitOrderParam;
         try {
-            await OKX_REST_PRIVATE_CLIENT.submitOrder({
+            return OKX_REST_PRIVATE_CLIENT.submitOrder({
                 instId: symbol,
                 tdMode: 'cash',
                 side: side === Side.BUY ? 'buy' : 'sell',
@@ -19,7 +19,8 @@ export class OkxApiTradeService {
                 px: price.toString()
             });
         } catch (error) {
-            console.error('newOrder error:', error);
+            console.error('newOrder OKX error:', error);
+            return error;
         }
     }
 }

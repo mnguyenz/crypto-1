@@ -4,6 +4,7 @@ import { OkxApiEarnService } from './okx-api-earn.service';
 import { roundUp } from '~core/utils/number.util';
 import { OkxApiTradeService } from './okx-api-trade.service';
 import { Side } from '@binance/connector-typescript';
+import { REDEEM_REDUNDENCY } from '~orders/constants/order.constant';
 
 @Injectable()
 export class OkxOrderService {
@@ -15,7 +16,7 @@ export class OkxOrderService {
     async redeemUSDThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
         const { symbol, price, quantity } = redeemThenOrderParam;
         try {
-            await this.okxApiEarnService.redeemUSDT(roundUp(price * quantity * 1.001, 8));
+            await this.okxApiEarnService.redeemUSDT(roundUp(price * quantity * REDEEM_REDUNDENCY, 8));
             await this.okxApiTradeService.newLimitOrder({
                 symbol,
                 side: Side.BUY,

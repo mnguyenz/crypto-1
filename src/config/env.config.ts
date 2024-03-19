@@ -19,8 +19,8 @@ export const env = {
         X_API_SECRET: process.env.X_BINANCE_API_SECRET
     },
     OKX: {
-        API_KEY: process.env.X_OKX_API_KEY,
-        API_SECRET: process.env.X_OKX_API_KEY,
-        API_PASS: process.env.X_OKX_API_KEY
+        X_API_KEY: process.env.X_OKX_API_KEY,
+        X_API_SECRET: process.env.X_OKX_API_SECRET,
+        X_API_PASS: process.env.X_OKX_API_PASS
     }
 };

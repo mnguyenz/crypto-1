@@ -16,6 +16,8 @@ import { CacheOrder } from '~orders/types/cache-order.type';
 import { BinanceApiMarketService } from '~binance-api/services/binance-api-market.service';
 import { BINANCE_POSTFIX_SYMBOL_FDUSD, BINANCE_POSTFIX_SYMBOL_USDT } from '~core/constants/binance.constant';
 import { OKX_POSTFIX_SYMBOL_USDT } from '~core/constants/okx.constant';
+import { BUY_WHEN_PRICE_COMPARE_ORDER, SELL_WHEN_PRICE_COMPARE_ORDER } from '~orders/constants/order.constant';
+import { ASSETS } from '~core/constants/crypto-code.constant';
 
 @Injectable()
 export class OrderSocketService {
@@ -81,7 +83,7 @@ export class OrderSocketService {
             ...(Array.isArray(okxBuyOrders) ? okxBuyOrders : []),
             ...(Array.isArray(binanceBuyOrders) ? binanceBuyOrders : [])
         ].filter((order: CacheOrder) => {
-            return symbol === order.symbol && currentPrice <= order.price * 3;
+            return symbol === order.symbol && currentPrice <= order.price * BUY_WHEN_PRICE_COMPARE_ORDER;
         });
         if (buyOrders.length) {
             const matchOrder = buyOrders[0];
@@ -90,8 +92,15 @@ export class OrderSocketService {
             const updatedOrders = orders.filter((order) => order.id !== matchOrder.id);
             await this.setOrdersToCache(updatedOrders, side, exchange);
             if (exchange === Exchanges.BINANCE) {
+                let asset;
+                if (symbol.endsWith(ASSETS.FIAT.USDT)) {
+                    asset = ASSETS.FIAT.USDT;
+                } else if (symbol.endsWith(ASSETS.FIAT.FDUSD)) {
+                    asset = ASSETS.FIAT.FDUSD;
+                }
                 this.binanceOrderService.redeemUSDThenOrder({
                     symbol,
+                    asset,
                     price: matchOrder.price,
                     quantity: matchOrder.quantity
                 });
@@ -111,7 +120,7 @@ export class OrderSocketService {
             ...(Array.isArray(okxSellOrders) ? okxSellOrders : []),
             ...(Array.isArray(binanceSellOrders) ? binanceSellOrders : [])
         ].filter((order: CacheOrder) => {
-            return symbol === order.symbol && currentPrice >= order.price * 0.9965;
+            return symbol === order.symbol && currentPrice >= order.price * SELL_WHEN_PRICE_COMPARE_ORDER;
         });
         if (sellOrders.length) {
             const matchOrder = sellOrders[0];
@@ -120,17 +129,12 @@ export class OrderSocketService {
             const updatedOrders = orders.filter((order) => order.id !== matchOrder.id);
             await this.setOrdersToCache(updatedOrders, side, exchange);
             if (exchange === Exchanges.BINANCE) {
-                // this.binanceOrderService.redeemCryptoThenOrder({
-                //     symbol,
-                //     price: matchOrder.price,
-                //     quantity: matchOrder.quantity
-                // });
-                // } else if (exchange === Exchanges.OKX) {
-                //     this.okxOrderService.redeemThenOrder({
-                //         symbol,
-                //         price: matchOrder.price,
-                //         quantity: matchOrder.quantity
-                //     });
+                this.binanceOrderService.redeemCryptoThenOrder({
+                    symbol,
+                    asset: matchOrder.asset,
+                    price: matchOrder.price,
+                    quantity: matchOrder.quantity
+                });
             }
             await this.orderRepository.softDelete({ id: matchOrder.id });
         }

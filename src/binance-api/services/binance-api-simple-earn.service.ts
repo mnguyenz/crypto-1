@@ -6,19 +6,17 @@ import { BINANCE_CLIENT } from '~core/constants/binance.constant';
 export class BinanceApiSimpleEarnService {
     constructor() {}
 
-    async redeem(asset: string, amount: number): Promise<void> {
+    async redeem(asset: string, amount: number): Promise<any> {
         try {
-            console.log('asset:', asset, 'amount:', amount);
             const simpleEarnProduct = await BINANCE_CLIENT.getSimpleEarnFlexibleProductList({ asset });
-            console.log('simpleEarnProduct:', simpleEarnProduct);
             const productId = simpleEarnProduct.rows[0].productId;
-            console.log('productId:', productId);
-            await BINANCE_CLIENT.redeemFlexibleProduct(productId, {
+            return BINANCE_CLIENT.redeemFlexibleProduct(productId, {
                 amount,
                 destAccount: RedeemDestAccount.SPOT
             });
         } catch (error) {
-            console.error('redeemUSDT Binance error:', error);
+            console.error('redeem Binance error:', error);
+            return error;
         }
     }
 }

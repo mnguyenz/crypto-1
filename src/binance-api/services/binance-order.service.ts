@@ -6,6 +6,7 @@ import { Side } from '@binance/connector-typescript';
 import { roundUp } from '~core/utils/number.util';
 import { ASSETS } from '~core/constants/crypto-code.constant';
 import { BINANCE_CLIENT } from '~core/constants/binance.constant';
+import { REDEEM_REDUNDENCY } from '~orders/constants/order.constant';
 
 @Injectable()
 export class BinanceOrderService {
@@ -15,14 +16,9 @@ export class BinanceOrderService {
     ) {}
 
     async redeemUSDThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
-        console.log('redeemThenOrderParam:', redeemThenOrderParam);
-        const { symbol, price, quantity } = redeemThenOrderParam;
+        const { symbol, asset, price, quantity } = redeemThenOrderParam;
         try {
-            if (symbol.endsWith(ASSETS.FIAT.USDT)) {
-                await this.binanceApiSimpleEarnService.redeem(ASSETS.FIAT.USDT, roundUp(price * quantity * 1.001, 8));
-            } else if (symbol.endsWith(ASSETS.FIAT.FDUSD)) {
-                await this.binanceApiSimpleEarnService.redeem(ASSETS.FIAT.FDUSD, roundUp(price * quantity * 1.001, 8));
-            }
+            await this.binanceApiSimpleEarnService.redeem(asset, roundUp(price * quantity * REDEEM_REDUNDENCY, 8));
             await this.binanceApiTradeService.newLimitOrder({
                 symbol,
                 side: Side.BUY,
@@ -31,15 +27,25 @@ export class BinanceOrderService {
             });
         } catch (error) {
             console.error('redeemUSDThenOrder Binance error:', error);
+            if (asset === ASSETS.FIAT.FDUSD) {
+                await this.binanceApiSimpleEarnService.redeem(
+                    ASSETS.FIAT.USDT,
+                    roundUp(price * quantity * REDEEM_REDUNDENCY, 8)
+                );
+                await this.binanceApiTradeService.newLimitOrder({
+                    symbol: symbol.replace(/FDUSD$/, 'USDT'),
+                    side: Side.BUY,
+                    price,
+                    quantity
+                });
+            }
         }
     }
 
     async redeemCryptoThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
-        const { symbol, price, quantity } = redeemThenOrderParam;
+        const { symbol, asset, price, quantity } = redeemThenOrderParam;
         try {
-            const exchangeInfor = await BINANCE_CLIENT.exchangeInformation({ symbol });
-            const baseAsset = exchangeInfor.symbols[0].baseAsset;
-            await this.binanceApiSimpleEarnService.redeem(baseAsset, quantity);
+            await this.binanceApiSimpleEarnService.redeem(asset, quantity);
             await this.binanceApiTradeService.newLimitOrder({
                 symbol,
                 side: Side.SELL,

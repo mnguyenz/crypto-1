@@ -7,16 +7,17 @@ import { BINANCE_CLIENT } from '~core/constants/binance.constant';
 export class BinanceApiTradeService {
     constructor() {}
 
-    async newLimitOrder(newLimitOrderParam: NewLimitOrderParam): Promise<void> {
+    async newLimitOrder(newLimitOrderParam: NewLimitOrderParam): Promise<any> {
         const { symbol, side, quantity, price } = newLimitOrderParam;
         try {
-            await BINANCE_CLIENT.newOrder(symbol, side, OrderType.LIMIT, {
+            return BINANCE_CLIENT.newOrder(symbol, side, OrderType.LIMIT, {
                 timeInForce: TimeInForce.GTC,
                 quantity,
                 price
             });
         } catch (error) {
-            console.error('newOrder error:', error);
+            console.error('newOrder Binance error:', error);
+            return error;
         }
     }
 
