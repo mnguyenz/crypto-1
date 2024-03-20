@@ -13,6 +13,7 @@ import { OrderSocketService } from './order-socket.service';
 import { Side } from '@binance/connector-typescript';
 import { BINANCE_POSTFIX_SYMBOL_FDUSD, BINANCE_POSTFIX_SYMBOL_USDT } from '~core/constants/binance.constant';
 import { OKX_POSTFIX_SYMBOL_USDT } from '~core/constants/okx.constant';
+import { OrderStrategy } from '~core/enums/order-strategy.enum';
 
 @Injectable()
 export class OrderService {
@@ -79,7 +80,9 @@ export class OrderService {
     }
 
     async compareOrderVsCurrentPrice(): Promise<CompareOrderVsCurrentPriceResponse[]> {
-        const orders = await this.orderRepository.find();
+        const orders = await this.orderRepository.find({
+            where: { side: Side.BUY, strategy: OrderStrategy.MANUAL }
+        });
         const result: CompareOrderVsCurrentPriceResponse[] = [];
         for (const order of orders) {
             const { asset, side, price, exchange } = order;

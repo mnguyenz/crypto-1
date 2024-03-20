@@ -3,6 +3,7 @@ import { BinanceOrderService } from '~binance-api/services/binance-order.service
 import { BINANCE_SYMBOLS, OKX_SYMBOLS } from '~core/constants/crypto-code.constant';
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { OkxOrderService } from '~okx-api/services/okx-order.service';
+import { SELL_WHEN_PRICE_COMPARE_ORDER } from '~orders/constants/order.constant';
 import { BuyDipRepository } from '~repositories/buy-dip.repository';
 
 @Injectable()
@@ -36,7 +37,7 @@ export class BuyDipService {
     }
 
     buyDip(symbol: string, currentPrice: number): Promise<void> {
-        const price = currentPrice * 0.998;
+        const price = currentPrice * SELL_WHEN_PRICE_COMPARE_ORDER;
         let quantity;
         switch (symbol) {
             case BINANCE_SYMBOLS.BTCUSDT:

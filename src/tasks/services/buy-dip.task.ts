@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { LessThan, Not } from 'typeorm';
+import { LessThan } from 'typeorm';
 import { BuyDipRepository } from '~repositories/buy-dip.repository';
 
 @Injectable()
