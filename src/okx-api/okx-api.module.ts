@@ -8,6 +8,6 @@ import { OkxApiMarketService } from './services/okx-api-market.service';
     imports: [],
     controllers: [],
     providers: [OkxApiEarnService, OkxApiMarketService, OkxOrderService, OkxApiTradeService],
-    exports: [OkxApiMarketService, OkxOrderService]
+    exports: [OkxApiEarnService, OkxApiMarketService, OkxOrderService]
 })
 export class OkxApiModule {}

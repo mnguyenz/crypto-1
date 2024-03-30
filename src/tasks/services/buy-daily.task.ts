@@ -1,54 +1,56 @@
-import { Side } from '@binance/connector-typescript';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ASSETS, OKX_SYMBOLS } from '~core/constants/crypto-code.constant';
-import { Exchanges } from '~core/enums/exchanges.enum';
-import { OrderStrategy } from '~core/enums/order-strategy.enum';
-import { round } from '~core/utils/number.util';
+import { OkxApiEarnService } from '~okx-api/services/okx-api-earn.service';
 import { OkxApiMarketService } from '~okx-api/services/okx-api-market.service';
-import { OrderRepository } from '~repositories/order.repository';
+import { OkxOrderService } from '~okx-api/services/okx-order.service';
 import {
-    OKX_DECIMAL_PLACES_BTC,
-    OKX_DECIMAL_PLACES_ETH,
+    MAX_BTC_PRICE,
+    MAX_ETH_PRICE,
+    OKX_BUY_FEE_COMPENSATION,
     OKX_MIN_BUY_BTC,
-    OKX_MIN_BUY_ETH,
-    REDUCE_CURRENT_PRICE
+    OKX_MIN_BUY_ETH
 } from '~tasks/constants/buy-daily.constant';
 
 @Injectable()
 export class BuyDailyTask {
     constructor(
         private okxApiMarketService: OkxApiMarketService,
-        private orderRepository: OrderRepository
+        private okxOrderService: OkxOrderService,
+        private okxApiEarnService: OkxApiEarnService
     ) {}
 
     @Cron(CronExpression.EVERY_2_HOURS)
     async buyETH(): Promise<void> {
         const symbol = OKX_SYMBOLS.ETHUSDT;
-        const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 1);
-        const currentPrice = okxOrderBook.bids[0][0];
-        await this.orderRepository.insert({
-            asset: ASSETS.CRYPTO.ETH,
-            side: Side.BUY,
-            price: round(currentPrice * REDUCE_CURRENT_PRICE, OKX_DECIMAL_PLACES_ETH),
-            quantity: OKX_MIN_BUY_ETH,
-            exchange: Exchanges.OKX,
-            strategy: OrderStrategy.DAILY
-        });
+        const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 4);
+        const currentPrice = okxOrderBook.bids[3][0];
+        if (currentPrice <= MAX_ETH_PRICE) {
+            this.okxOrderService.redeemUSDThenOrder({
+                symbol,
+                price: currentPrice,
+                quantity: OKX_MIN_BUY_ETH * OKX_BUY_FEE_COMPENSATION
+            });
+        }
     }
 
-    @Cron(CronExpression.EVERY_4_HOURS)
+    @Cron(CronExpression.EVERY_2_HOURS)
     async buyBTC(): Promise<void> {
         const symbol = OKX_SYMBOLS.BTCUSDT;
-        const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 1);
-        const currentPrice = okxOrderBook.bids[0][0];
-        await this.orderRepository.insert({
-            asset: ASSETS.CRYPTO.BTC,
-            side: Side.BUY,
-            price: round(currentPrice * REDUCE_CURRENT_PRICE, OKX_DECIMAL_PLACES_BTC),
-            quantity: OKX_MIN_BUY_BTC,
-            exchange: Exchanges.OKX,
-            strategy: OrderStrategy.DAILY
-        });
+        const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 4);
+        const currentPrice = okxOrderBook.bids[3][0];
+        if (currentPrice <= MAX_BTC_PRICE) {
+            this.okxOrderService.redeemUSDThenOrder({
+                symbol,
+                price: currentPrice,
+                quantity: OKX_MIN_BUY_BTC
+            });
+        }
+    }
+
+    @Cron(CronExpression.EVERY_30_MINUTES)
+    async purchaseSavingOKX(): Promise<void> {
+        this.okxApiEarnService.purchaseMaxToSaving(ASSETS.CRYPTO.ETH);
+        this.okxApiEarnService.purchaseMaxToSaving(ASSETS.CRYPTO.BTC);
     }
 }

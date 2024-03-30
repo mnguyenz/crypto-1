@@ -5,7 +5,6 @@ import { BinanceApiTradeService } from './binance-api-trade.service';
 import { Side } from '@binance/connector-typescript';
 import { roundUp } from '~core/utils/number.util';
 import { ASSETS } from '~core/constants/crypto-code.constant';
-import { BINANCE_CLIENT } from '~core/constants/binance.constant';
 import { REDEEM_REDUNDENCY } from '~orders/constants/order.constant';
 
 @Injectable()

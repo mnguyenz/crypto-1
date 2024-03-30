@@ -81,7 +81,7 @@ export class OrderService {
 
     async compareOrderVsCurrentPrice(): Promise<CompareOrderVsCurrentPriceResponse[]> {
         const orders = await this.orderRepository.find({
-            where: { side: Side.BUY, strategy: OrderStrategy.MANUAL }
+            where: { strategy: OrderStrategy.MANUAL }
         });
         const result: CompareOrderVsCurrentPriceResponse[] = [];
         for (const order of orders) {

@@ -135,6 +135,13 @@ export class OrderSocketService {
                     price: matchOrder.price,
                     quantity: matchOrder.quantity
                 });
+            } else if (exchange === Exchanges.OKX) {
+                this.okxOrderService.redeemCryptoThenOrder({
+                    symbol,
+                    asset: matchOrder.asset,
+                    price: matchOrder.price,
+                    quantity: matchOrder.quantity
+                });
             }
             await this.orderRepository.softDelete({ id: matchOrder.id });
         }
