@@ -44,18 +44,20 @@ export const ASSETS = {
         BTC: 'BTC',
         ETH: 'ETH',
         BNB: 'BNB',
-        XRP: 'XRP',
-        TRX: 'TRX',
-        DOGE: 'DOGE',
-        DOT: 'DOT',
-        SHIB: 'SHIB'
+        SOL: 'SOL',
+        STRK: 'STRK',
+        ARB: 'ARB',
+        OP: 'OP',
+        PIXEL: 'PIXEL',
+        DOT: 'DOT'
     }
 };
 
 export const BINANCE_SYMBOLS = {
     BTCUSDT: 'BTCUSDT',
     ETHUSDT: 'ETHUSDT',
-    SOLUSDT: 'SOLUSDT'
+    SOLUSDT: 'SOLUSDT',
+    STRKUSDT: 'STRKUSDT'
 };
 
 export const OKX_SYMBOLS = {

@@ -15,4 +15,14 @@ export function getAssetsFromSymbol(symbol: string): AssetsFromSymbol {
             };
         }
     }
-};
+}
+
+export function countDecimalPlaces(size: string): number {
+    const decimalIndex = size.indexOf('.');
+    const oneDecimalIndex = size.indexOf('1');
+    if (decimalIndex !== -1) {
+        return oneDecimalIndex - decimalIndex;
+    } else {
+        return 0;
+    }
+}
