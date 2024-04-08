@@ -6,6 +6,7 @@ import { InsertResult } from 'typeorm';
 import { CreateOrderDto } from '~orders/dtos/create-order.dto';
 import { OrderService } from '~orders/services/order.service';
 import { CompareOrderVsCurrentPriceResponse } from '~orders/responses/compare-order-vs-current-price.response';
+import { BuyMinimumDto } from '~orders/dtos/buy-minimum.dto';
 
 @Controller('orders')
 @ApiTags('Orders')
@@ -25,5 +26,10 @@ export class OrderController {
     @Get('compare-price')
     compareOrderVsCurrentPrice(): Promise<CompareOrderVsCurrentPriceResponse[]> {
         return this.orderService.compareOrderVsCurrentPrice();
+    }
+
+    @Post('buy-minimum')
+    buyMinimum(@Body() buyMinimumDto: BuyMinimumDto): Promise<void> {
+        return this.orderService.buyMinimum(buyMinimumDto);
     }
 }

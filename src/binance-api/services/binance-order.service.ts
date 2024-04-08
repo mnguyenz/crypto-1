@@ -65,8 +65,7 @@ export class BinanceOrderService {
         }
     }
 
-    async buyMin(asset: string, currentPrice: number) {
-        const symbol = `${asset}${ASSETS.FIAT.USDT}`;
+    async buyMin(symbol: string, currentPrice: number): Promise<void> {
         const exchangeInformation = await BINANCE_CLIENT.exchangeInformation({ symbol });
         const filters = exchangeInformation.symbols[0].filters;
         const { tickSize } = filters.find((filter) => filter.filterType === BinanceFilterType.PRICE_FILTER) as any;
@@ -77,16 +76,8 @@ export class BinanceOrderService {
         this.redeemUSDThenOrder({
             symbol,
             price: currentPrice,
-            quantity
-        });
-        this.orderRepository.insert({
-            asset,
-            side: Side.BUY,
-            price: orderPrice,
             quantity,
-            exchange: Exchanges.BINANCE,
-            strategy: OrderStrategy.DAILY,
-            deletedAt: new Date().getTime()
+            asset: ASSETS.FIAT.USDT
         });
     }
 }

@@ -14,6 +14,10 @@ import { Side } from '@binance/connector-typescript';
 import { BINANCE_POSTFIX_SYMBOL_FDUSD, BINANCE_POSTFIX_SYMBOL_USDT } from '~core/constants/binance.constant';
 import { OKX_POSTFIX_SYMBOL_USDT } from '~core/constants/okx.constant';
 import { OrderStrategy } from '~core/enums/order-strategy.enum';
+import { BuyMinimumDto } from '~orders/dtos/buy-minimum.dto';
+import { ASSETS } from '~core/constants/crypto-code.constant';
+import { BinanceOrderService } from '~binance-api/services/binance-order.service';
+import { OkxOrderService } from '~okx-api/services/okx-order.service';
 
 @Injectable()
 export class OrderService {
@@ -22,7 +26,9 @@ export class OrderService {
         private orderRepository: OrderRepository,
         private orderSocketService: OrderSocketService,
         private binanceApiMarketService: BinanceApiMarketService,
-        private okxApiMarketService: OkxApiMarketService
+        private binanceOrderService: BinanceOrderService,
+        private okxApiMarketService: OkxApiMarketService,
+        private okxOrderService: OkxOrderService
     ) {}
 
     getOrder(exchange: Exchanges): Promise<OrderEntity[]> {
@@ -118,5 +124,20 @@ export class OrderService {
             });
         }
         return result.sort((a, b) => a.percentage - b.percentage);
+    }
+
+    async buyMinimum(buyMinimumDto: BuyMinimumDto): Promise<void> {
+        const { asset, exchange } = buyMinimumDto;
+        if (exchange === Exchanges.BINANCE) {
+            const symbol = `${asset}${ASSETS.FIAT.USDT}`;
+            const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 5);
+            const currentPrice = binanceOrderBook.bids[4][0];
+            this.binanceOrderService.buyMin(symbol, currentPrice);
+        } else if (exchange === Exchanges.OKX) {
+            const symbol = `${asset}${OKX_POSTFIX_SYMBOL_USDT}`;
+            const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 5);
+            const currentPrice = okxOrderBook.bids[4][0];
+            this.okxOrderService.buyMin(symbol, currentPrice);
+        }
     }
 }

@@ -6,6 +6,7 @@ import { OkxApiTradeService } from './okx-api-trade.service';
 import { Side } from '@binance/connector-typescript';
 import { REDEEM_REDUNDENCY } from '~orders/constants/order.constant';
 import { ASSETS } from '~core/constants/crypto-code.constant';
+import { OKX_REST_PRIVATE_CLIENT } from '~core/constants/okx.constant';
 
 @Injectable()
 export class OkxOrderService {
@@ -42,5 +43,15 @@ export class OkxOrderService {
         } catch (error) {
             console.error('OKX redeemCryptoThenOrder error:', error);
         }
+    }
+
+    async buyMin(symbol: string, currentPrice: number): Promise<void> {
+        const exchangeInformations = await OKX_REST_PRIVATE_CLIENT.getInstruments('SPOT', undefined, undefined, symbol);
+        console.log(exchangeInformations[0].minSz);
+        this.redeemUSDThenOrder({
+            symbol,
+            price: currentPrice,
+            quantity: parseFloat(exchangeInformations[0].minSz)
+        });
     }
 }
