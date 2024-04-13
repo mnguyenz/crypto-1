@@ -33,7 +33,7 @@ export class BuyDailyTask {
         private orderRepository: OrderRepository
     ) {}
 
-    @Cron(CronExpression.EVERY_2_HOURS)
+    @Cron(CronExpression.EVERY_HOUR)
     async OKXbuyETH(): Promise<void> {
         const symbol = OKX_SYMBOLS.ETHUSDT;
         const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 4);

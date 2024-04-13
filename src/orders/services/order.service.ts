@@ -120,6 +120,7 @@ export class OrderService {
                 symbol,
                 currentPrice,
                 orderPrice: price,
+                totalAmount: price * order.quantity,
                 percentage
             });
         }
