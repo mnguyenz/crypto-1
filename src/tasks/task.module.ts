@@ -7,12 +7,16 @@ import { BuyDipTask } from './services/buy-dip.task';
 import { OkxApiModule } from '~okx-api/okx-api.module';
 import { BuyDailyTask } from './services/buy-daily.task';
 import { OrderRepository } from '~repositories/order.repository';
+import { TradeModule } from '~trades/trade.module';
+import { AverageCalculationModule } from '~average-calculation/average-calculation.module';
 
 @Module({
     imports: [
         TypeOrmHelperModule.forCustomRepository([BuyDipRepository, OrderRepository]),
+        AverageCalculationModule,
         BinanceApiModule,
-        OkxApiModule
+        OkxApiModule,
+        TradeModule
     ],
     controllers: [],
     providers: [BuyDailyTask, BuyDipTask, NewListingTask],

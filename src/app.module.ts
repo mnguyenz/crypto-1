@@ -10,6 +10,8 @@ import { OkxSocketModule } from '~okx-socket/okx-socket.module';
 import { TaskModule } from '~tasks/task.module';
 import { SeedModule } from '~seeds/seed.module';
 import { AlgorithmModule } from '~algorithms/algorithm.module';
+import { AverageCalculationModule } from '~average-calculation/average-calculation.module';
+import { TradeModule } from '~trades/trade.module';
 
 @Module({
     imports: [
@@ -17,11 +19,13 @@ import { AlgorithmModule } from '~algorithms/algorithm.module';
         scheduleConfig,
         GlobalCacheModule,
         AlgorithmModule,
+        AverageCalculationModule,
         BinanceSocketModule,
         OkxSocketModule,
         OrderModule,
         SeedModule,
-        TaskModule
+        TaskModule,
+        TradeModule
     ],
     controllers: [AppController],
     providers: [AppService]

@@ -1,11 +1,9 @@
 export const OKX_MIN_BUY_ETH = 0.0001;
 export const OKX_DECIMAL_PLACES_ETH = 2;
-export const MAX_ETH_PRICE = 3620;
-export const MAX_ETH_PRICE_2 = 3280;
+export const MAX_ETH_PRICE = 3600;
 export const OKX_MIN_BUY_BTC = 0.00001;
 export const OKX_DECIMAL_PLACES_BTC = 2;
-export const MAX_BTC_PRICE = 69500;
-export const MAX_BTC_PRICE_2 = 64100;
+export const MAX_BTC_PRICE = 69000;
 
 export const OKX_BUY_FEE_COMPENSATION = 1.01;
 
