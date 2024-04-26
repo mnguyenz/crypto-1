@@ -8,3 +8,5 @@ export const OKX_REST_PRIVATE_CLIENT = new RestClient({
 });
 
 export const OKX_POSTFIX_SYMBOL_USDT = '-USDT';
+
+export const OKX_MIN_SAVING_BTC_ETH = 0.0001;

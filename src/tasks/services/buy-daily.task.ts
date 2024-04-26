@@ -36,8 +36,6 @@ export class BuyDailyTask {
         if (currentPrice < dca) {
             const loss = (dca - currentPrice) / currentPrice;
             quantity = OKX_MIN_BUY_ETH * OKX_BUY_FEE_COMPENSATION * (1 + loss);
-        } else if (currentPrice <= MAX_ETH_PRICE) {
-            quantity = OKX_MIN_BUY_ETH * OKX_BUY_FEE_COMPENSATION;
         }
         if (quantity > 0) {
             this.okxOrderService.redeemUSDThenOrder({
@@ -59,8 +57,6 @@ export class BuyDailyTask {
         if (currentPrice < dca) {
             const loss = (dca - currentPrice) / currentPrice;
             quantity = OKX_MIN_BUY_BTC * (1 + loss);
-        } else if (currentPrice <= MAX_BTC_PRICE) {
-            quantity = OKX_MIN_BUY_BTC;
         }
         if (quantity > 0) {
             this.okxOrderService.redeemUSDThenOrder({
