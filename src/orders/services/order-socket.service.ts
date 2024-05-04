@@ -17,7 +17,6 @@ import { BinanceApiMarketService } from '~binance-api/services/binance-api-marke
 import { BINANCE_POSTFIX_SYMBOL_FDUSD, BINANCE_POSTFIX_SYMBOL_USDT } from '~core/constants/binance.constant';
 import { OKX_POSTFIX_SYMBOL_USDT } from '~core/constants/okx.constant';
 import { BUY_WHEN_PRICE_COMPARE_ORDER, SELL_WHEN_PRICE_COMPARE_ORDER } from '~orders/constants/order.constant';
-import { ASSETS } from '~core/constants/crypto-code.constant';
 
 @Injectable()
 export class OrderSocketService {
@@ -92,20 +91,13 @@ export class OrderSocketService {
             const updatedOrders = orders.filter((order) => order.id !== matchOrder.id);
             await this.setOrdersToCache(updatedOrders, side, exchange);
             if (exchange === Exchanges.BINANCE) {
-                let asset;
-                if (symbol.endsWith(ASSETS.FIAT.USDT)) {
-                    asset = ASSETS.FIAT.USDT;
-                } else if (symbol.endsWith(ASSETS.FIAT.FDUSD)) {
-                    asset = ASSETS.FIAT.FDUSD;
-                }
-                this.binanceOrderService.redeemUSDThenOrder({
+                this.binanceOrderService.redeemUsdThenOrder({
                     symbol,
-                    asset,
                     price: matchOrder.price,
                     quantity: matchOrder.quantity
                 });
             } else if (exchange === Exchanges.OKX) {
-                this.okxOrderService.redeemUSDThenOrder({
+                this.okxOrderService.redeemUsdThenOrder({
                     symbol,
                     price: matchOrder.price,
                     quantity: matchOrder.quantity

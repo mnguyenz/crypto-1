@@ -25,7 +25,7 @@ export class BuyDailyTask {
         private tradeService: TradeService
     ) {}
 
-    @Cron(CronExpression.EVERY_2_HOURS)
+    @Cron(CronExpression.EVERY_4_HOURS)
     async OKXbuyETH(): Promise<void> {
         const symbol = OKX_SYMBOLS.ETHUSDT;
         await this.tradeService.seedTrades(symbol, Exchanges.OKX);
@@ -38,7 +38,7 @@ export class BuyDailyTask {
             quantity = OKX_MIN_BUY_ETH * OKX_BUY_FEE_COMPENSATION * (1 + loss);
         }
         if (quantity > 0) {
-            this.okxOrderService.redeemUSDThenOrder({
+            this.okxOrderService.redeemUsdThenOrder({
                 symbol,
                 price: currentPrice,
                 quantity
@@ -46,7 +46,7 @@ export class BuyDailyTask {
         }
     }
 
-    @Cron(CronExpression.EVERY_2_HOURS)
+    @Cron(CronExpression.EVERY_4_HOURS)
     async OKXbuyBTC(): Promise<void> {
         const symbol = OKX_SYMBOLS.BTCUSDT;
         await this.tradeService.seedTrades(symbol, Exchanges.OKX);
@@ -59,7 +59,7 @@ export class BuyDailyTask {
             quantity = OKX_MIN_BUY_BTC * (1 + loss);
         }
         if (quantity > 0) {
-            this.okxOrderService.redeemUSDThenOrder({
+            this.okxOrderService.redeemUsdThenOrder({
                 symbol,
                 price: currentPrice,
                 quantity

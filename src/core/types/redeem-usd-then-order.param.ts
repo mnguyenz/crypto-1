@@ -1,6 +1,5 @@
-export type RedeemThenOrderParam = {
+export type RedeemUsdThenOrderParam = {
     symbol: string;
     price: number;
     quantity: number;
-    asset?: string;
 };

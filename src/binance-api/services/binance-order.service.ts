@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { BinanceApiSimpleEarnService } from './binance-api-simple-earn.service';
-import { RedeemThenOrderParam } from '~core/types/redeem-then-order.param';
 import { BinanceApiTradeService } from './binance-api-trade.service';
 import { Side } from '@binance/connector-typescript';
 import { round, roundUp } from '~core/utils/number.util';
@@ -8,23 +7,25 @@ import { ASSETS } from '~core/constants/crypto-code.constant';
 import { REDEEM_REDUNDENCY } from '~orders/constants/order.constant';
 import { BINANCE_CLIENT } from '~core/constants/binance.constant';
 import { BinanceFilterType } from '~binance-api/enums/binance-filter-type.enum';
-import { BinanceApiMarketService } from './binance-api-market.service';
 import { countDecimalPlaces } from '~core/utils/string.util';
-import { OrderRepository } from '~repositories/order.repository';
-import { Exchanges } from '~core/enums/exchanges.enum';
-import { OrderStrategy } from '~core/enums/order-strategy.enum';
+import { RedeemUsdThenOrderParam } from '~core/types/redeem-usd-then-order.param';
+import { RedeemCryptoThenOrderParam } from '~core/types/redeem-crypto-then-order.param';
 
 @Injectable()
 export class BinanceOrderService {
     constructor(
-        private binanceApiMarketService: BinanceApiMarketService,
         private binanceApiSimpleEarnService: BinanceApiSimpleEarnService,
-        private binanceApiTradeService: BinanceApiTradeService,
-        private orderRepository: OrderRepository
+        private binanceApiTradeService: BinanceApiTradeService
     ) {}
 
-    async redeemUSDThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
-        const { symbol, asset, price, quantity } = redeemThenOrderParam;
+    async redeemUsdThenOrder(redeemThenOrderParam: RedeemUsdThenOrderParam): Promise<void> {
+        const { symbol, price, quantity } = redeemThenOrderParam;
+        let asset;
+        if (symbol.endsWith(ASSETS.FIAT.USDT)) {
+            asset = ASSETS.FIAT.USDT;
+        } else if (symbol.endsWith(ASSETS.FIAT.FDUSD)) {
+            asset = ASSETS.FIAT.FDUSD;
+        }
         try {
             await this.binanceApiSimpleEarnService.redeem(asset, roundUp(price * quantity * REDEEM_REDUNDENCY, 8));
             await this.binanceApiTradeService.newLimitOrder({
@@ -34,7 +35,7 @@ export class BinanceOrderService {
                 quantity
             });
         } catch (error) {
-            console.error('redeemUSDThenOrder Binance error:', error);
+            console.error('redeemUsdThenOrder Binance error:', error);
             if (asset === ASSETS.FIAT.FDUSD) {
                 await this.binanceApiSimpleEarnService.redeem(
                     ASSETS.FIAT.USDT,
@@ -50,7 +51,7 @@ export class BinanceOrderService {
         }
     }
 
-    async redeemCryptoThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
+    async redeemCryptoThenOrder(redeemThenOrderParam: RedeemCryptoThenOrderParam): Promise<void> {
         const { symbol, asset, price, quantity } = redeemThenOrderParam;
         try {
             await this.binanceApiSimpleEarnService.redeem(asset, quantity);
@@ -73,11 +74,10 @@ export class BinanceOrderService {
         const { minNotional } = filters.find((filter) => filter.filterType === BinanceFilterType.NOTIONAL) as any;
         const orderPrice = round(currentPrice, countDecimalPlaces(tickSize));
         const quantity = roundUp(minNotional / orderPrice, countDecimalPlaces(stepSize));
-        this.redeemUSDThenOrder({
+        this.redeemUsdThenOrder({
             symbol,
             price: currentPrice,
-            quantity,
-            asset: ASSETS.FIAT.USDT
+            quantity
         });
     }
 }

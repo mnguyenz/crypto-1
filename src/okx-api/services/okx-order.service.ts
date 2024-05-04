@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { RedeemThenOrderParam } from '~core/types/redeem-then-order.param';
 import { OkxApiEarnService } from './okx-api-earn.service';
 import { roundUp } from '~core/utils/number.util';
 import { OkxApiTradeService } from './okx-api-trade.service';
@@ -7,6 +6,8 @@ import { Side } from '@binance/connector-typescript';
 import { REDEEM_REDUNDENCY } from '~orders/constants/order.constant';
 import { ASSETS } from '~core/constants/crypto-code.constant';
 import { OKX_REST_PRIVATE_CLIENT } from '~core/constants/okx.constant';
+import { RedeemUsdThenOrderParam } from '~core/types/redeem-usd-then-order.param';
+import { RedeemCryptoThenOrderParam } from '~core/types/redeem-crypto-then-order.param';
 
 @Injectable()
 export class OkxOrderService {
@@ -15,8 +16,8 @@ export class OkxOrderService {
         private okxApiTradeService: OkxApiTradeService
     ) {}
 
-    async redeemUSDThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
-        const { symbol, price, quantity } = redeemThenOrderParam;
+    async redeemUsdThenOrder(redeemUsdThenOrderParam: RedeemUsdThenOrderParam): Promise<void> {
+        const { symbol, price, quantity } = redeemUsdThenOrderParam;
         try {
             await this.okxApiEarnService.redeem(ASSETS.FIAT.USDT, roundUp(price * quantity * REDEEM_REDUNDENCY, 8));
             await this.okxApiTradeService.newLimitOrder({
@@ -30,8 +31,8 @@ export class OkxOrderService {
         }
     }
 
-    async redeemCryptoThenOrder(redeemThenOrderParam: RedeemThenOrderParam): Promise<void> {
-        const { symbol, asset, price, quantity } = redeemThenOrderParam;
+    async redeemCryptoThenOrder(redeemCryptoThenOrderParam: RedeemCryptoThenOrderParam): Promise<void> {
+        const { asset, symbol, price, quantity } = redeemCryptoThenOrderParam;
         try {
             await this.okxApiEarnService.redeem(asset, quantity);
             await this.okxApiTradeService.newLimitOrder({
@@ -48,7 +49,7 @@ export class OkxOrderService {
     async buyMin(symbol: string, currentPrice: number): Promise<void> {
         const exchangeInformations = await OKX_REST_PRIVATE_CLIENT.getInstruments('SPOT', undefined, undefined, symbol);
         console.log(exchangeInformations[0].minSz);
-        this.redeemUSDThenOrder({
+        this.redeemUsdThenOrder({
             symbol,
             price: currentPrice,
             quantity: parseFloat(exchangeInformations[0].minSz)

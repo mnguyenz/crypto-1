@@ -128,14 +128,12 @@ export class OrderService {
     }
 
     async buyMinimum(buyMinimumDto: BuyMinimumDto): Promise<void> {
-        const { asset, exchange } = buyMinimumDto;
+        const { symbol, exchange } = buyMinimumDto;
         if (exchange === Exchanges.BINANCE) {
-            const symbol = `${asset}${ASSETS.FIAT.USDT}`;
             const binanceOrderBook = await this.binanceApiMarketService.getOrderBook(symbol, 5);
             const currentPrice = binanceOrderBook.bids[4][0];
             this.binanceOrderService.buyMin(symbol, currentPrice);
         } else if (exchange === Exchanges.OKX) {
-            const symbol = `${asset}${OKX_POSTFIX_SYMBOL_USDT}`;
             const okxOrderBook = await this.okxApiMarketService.getOrderBook(symbol, 5);
             const currentPrice = okxOrderBook.bids[4][0];
             this.okxOrderService.buyMin(symbol, currentPrice);
