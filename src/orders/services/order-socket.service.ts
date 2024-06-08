@@ -78,11 +78,23 @@ export class OrderSocketService {
         }
         const okxBuyOrders: CacheOrder[] = await this.cacheManager.get(OKX_BUY_ORDERS);
         const binanceBuyOrders: CacheOrder[] = await this.cacheManager.get(BINANCE_BUY_ORDERS);
-        const buyOrders = [
+        const allBuyOrders = [
             ...(Array.isArray(okxBuyOrders) ? okxBuyOrders : []),
             ...(Array.isArray(binanceBuyOrders) ? binanceBuyOrders : [])
-        ].filter((order: CacheOrder) => {
-            return symbol === order.symbol && currentPrice <= order.price * BUY_WHEN_PRICE_COMPARE_ORDER;
+        ];
+        const shouldBeDeletedBuyOrders = allBuyOrders.filter((order: CacheOrder) => {
+            return currentPrice < order.price;
+        });
+        if (shouldBeDeletedBuyOrders.length) {
+            const matchOrder = shouldBeDeletedBuyOrders[0];
+            await this.orderRepository.softDelete({ id: matchOrder.id });
+        }
+        const buyOrders = allBuyOrders.filter((order: CacheOrder) => {
+            return (
+                symbol === order.symbol &&
+                currentPrice <= order.price * BUY_WHEN_PRICE_COMPARE_ORDER &&
+                currentPrice > order.price
+            );
         });
         if (buyOrders.length) {
             const matchOrder = buyOrders[0];
@@ -108,11 +120,23 @@ export class OrderSocketService {
 
         const okxSellOrders: CacheOrder[] = await this.cacheManager.get(OKX_SELL_ORDERS);
         const binanceSellOrders: CacheOrder[] = await this.cacheManager.get(BINANCE_SELL_ORDERS);
-        const sellOrders = [
+        const allSellOrders = [
             ...(Array.isArray(okxSellOrders) ? okxSellOrders : []),
             ...(Array.isArray(binanceSellOrders) ? binanceSellOrders : [])
-        ].filter((order: CacheOrder) => {
-            return symbol === order.symbol && currentPrice >= order.price * SELL_WHEN_PRICE_COMPARE_ORDER;
+        ];
+        const shouldBeDeletedSellOrders = allSellOrders.filter((order: CacheOrder) => {
+            return currentPrice > order.price;
+        });
+        if (shouldBeDeletedSellOrders.length) {
+            const matchOrder = shouldBeDeletedBuyOrders[0];
+            await this.orderRepository.softDelete({ id: matchOrder.id });
+        }
+        const sellOrders = allSellOrders.filter((order: CacheOrder) => {
+            return (
+                symbol === order.symbol &&
+                currentPrice >= order.price * SELL_WHEN_PRICE_COMPARE_ORDER &&
+                currentPrice < order.price
+            );
         });
         if (sellOrders.length) {
             const matchOrder = sellOrders[0];
