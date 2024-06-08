@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AverageCalculationService } from '~average-calculation/services/average-calculation.service';
-import { BinanceApiSimpleEarnService } from '~binance-api/services/binance-api-simple-earn.service';
 import { ASSETS, OKX_SYMBOLS } from '~core/constants/crypto-code.constant';
 import { Exchanges } from '~core/enums/exchanges.enum';
 import { randomPercentage } from '~core/utils/random.util';
@@ -15,7 +14,6 @@ import { TradeService } from '~trades/services/trade.service';
 export class BuyDailyTask {
     constructor(
         private averageCalculationService: AverageCalculationService,
-        private binanceApiSimpleEarnService: BinanceApiSimpleEarnService,
         private okxApiMarketService: OkxApiMarketService,
         private okxOrderService: OkxOrderService,
         private okxApiEarnService: OkxApiEarnService,

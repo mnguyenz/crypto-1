@@ -82,7 +82,11 @@ export class OrderSocketService {
             ...(Array.isArray(okxBuyOrders) ? okxBuyOrders : []),
             ...(Array.isArray(binanceBuyOrders) ? binanceBuyOrders : [])
         ].filter((order: CacheOrder) => {
-            return symbol === order.symbol && currentPrice <= order.price * BUY_WHEN_PRICE_COMPARE_ORDER;
+            return (
+                symbol === order.symbol &&
+                currentPrice <= order.price * BUY_WHEN_PRICE_COMPARE_ORDER &&
+                currentPrice > order.price
+            );
         });
         if (buyOrders.length) {
             const matchOrder = buyOrders[0];
@@ -112,7 +116,11 @@ export class OrderSocketService {
             ...(Array.isArray(okxSellOrders) ? okxSellOrders : []),
             ...(Array.isArray(binanceSellOrders) ? binanceSellOrders : [])
         ].filter((order: CacheOrder) => {
-            return symbol === order.symbol && currentPrice >= order.price * SELL_WHEN_PRICE_COMPARE_ORDER;
+            return (
+                symbol === order.symbol &&
+                currentPrice >= order.price * SELL_WHEN_PRICE_COMPARE_ORDER &&
+                currentPrice < order.price
+            );
         });
         if (sellOrders.length) {
             const matchOrder = sellOrders[0];
