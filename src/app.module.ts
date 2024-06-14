@@ -12,6 +12,7 @@ import { SeedModule } from '~seeds/seed.module';
 import { AlgorithmModule } from '~algorithms/algorithm.module';
 import { AverageCalculationModule } from '~average-calculation/average-calculation.module';
 import { TradeModule } from '~trades/trade.module';
+import { BacktestModule } from '~backtests/backtest.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { TradeModule } from '~trades/trade.module';
         GlobalCacheModule,
         AlgorithmModule,
         AverageCalculationModule,
+        BacktestModule,
         BinanceSocketModule,
         OkxSocketModule,
         OrderModule,

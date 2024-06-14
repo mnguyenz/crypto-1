@@ -10,3 +10,4 @@ export const M_BINANCE_CLIENT = new Spot(env.BINANCE.M_API_KEY, env.BINANCE.M_AP
 
 export const BINANCE_POSTFIX_SYMBOL_USDT = 'USDT';
 export const BINANCE_POSTFIX_SYMBOL_FDUSD = 'FDUSD';
+export const BINANCE_EARN_BNB_ID = 'BNB001';

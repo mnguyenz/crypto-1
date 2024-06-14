@@ -1,7 +1,7 @@
+import faker from 'faker';
+
 export function randomPercentage(numerator: number, denominator: number): boolean {
-    const randomNumber = Math.floor(Math.random() * denominator);
-    console.log('randomNumber', randomNumber);
+    const randomNumber = faker.datatype.number({ min: 0, max: denominator - 1 });
     const trueNumbers = Array.from({ length: numerator }, (_, i) => i);
-    console.log('trueNumbers', trueNumbers);
     return trueNumbers.includes(randomNumber);
 }
