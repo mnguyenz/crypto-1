@@ -77,7 +77,7 @@ export class BinanceApiMarketService {
                     takerBuyBaseAssetVolume: +kLine[9],
                     takerBuyQuoteAssetVolume: +kLine[10]
                 },
-                ['symbol', 'interval', 'closeTime']
+                ['symbol', 'interval', 'openTime']
             );
         }
     }

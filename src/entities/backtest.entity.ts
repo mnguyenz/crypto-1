@@ -6,6 +6,20 @@ export class BacktestEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column('enum', {
+        enum: AlgorithmType
+    })
     algorithm: AlgorithmType;
+
+    @Column('jsonb', { nullable: true })
+    data: Record<string, unknown>;
+
+    @Column('numeric')
+    investment: number;
+
+    @Column('numeric')
+    finalPortfolio: number;
+
+    @Column('numeric')
+    performance: number;
 }

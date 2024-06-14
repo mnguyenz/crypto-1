@@ -3,7 +3,7 @@ import { Interval } from '@binance/connector-typescript';
 import { ColumnNumericTransformer } from '~core/transforms/numeric.transformer';
 
 @Entity('Kline')
-@Index(['symbol', 'interval', 'closeTime'], { unique: true })
+@Index(['symbol', 'interval', 'openTime'], { unique: true })
 export class KlineEntity {
     @PrimaryColumn()
     symbol: string;
