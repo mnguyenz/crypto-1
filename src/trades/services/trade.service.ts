@@ -20,7 +20,7 @@ export class TradeService {
                     exchange
                 },
                 order: {
-                    orderIdReference: 'DESC'
+                    tradeTime: 'DESC'
                 }
             });
             let after: string = undefined;
@@ -38,6 +38,7 @@ export class TradeService {
                 (order: HistoricOrder) =>
                     ({
                         orderIdReference: order.ordId,
+                        tradeTime: BigInt(order.fillTime),
                         asset: order.instId.split('-')[0],
                         symbol: order.instId,
                         side: order.side === 'buy' ? Side.BUY : Side.SELL,

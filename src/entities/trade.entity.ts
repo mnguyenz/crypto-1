@@ -15,6 +15,9 @@ export class TradeEntity {
     @Column()
     orderIdReference: string;
 
+    @Column({ type: 'bigint' })
+    tradeTime: bigint;
+
     @ApiProperty({ example: ASSETS.CRYPTO.BTC })
     @Column()
     asset: string;
